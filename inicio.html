@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mi Universo Entero</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #020813, #051630, #0a2c5c);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+        .header-text {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(10, 44, 92, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(77, 166, 255, 0.4);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 0 20px rgba(0, 102, 204, 0.3);
+            text-align: center;
+            pointer-events: none;
+        }
+        .audio-container {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(5, 22, 48, 0.85);
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .audio-info {
+            color: #ffffff;
+            font-size: 13px;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        audio { width: 100%; height: 30px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header-text">Te Amo Muchísimo Mi Rey Hermoso 💙</div>
+    <canvas id="universe"></canvas>
+
+    <div class="audio-container">
+        <div class="audio-info">🎵 Los Redondos - La Bestia Pop.mp3</div>
+        <audio id="musica" controls
+            src="https://archive.org">
+        </audio>
+    </div>
+
+    <script>
+        const musica = document.getElementById('musica');
+
+        // La canción se detiene a los 20 segundos.
+        musica.addEventListener('timeupdate', () => {
+            if (musica.currentTime >= 20) {
+                musica.currentTime = 20;
+                musica.pause();
+            }
+        });
+
+        const canvas = document.getElementById('universe');
+        const ctx = canvas.getContext('2d');
+
+        const frases = [
+            "Sos mi lugar seguro", "Te amo muchísimo lindo", "Me encanta tu sonrisa", "Sos el chico de mis sueños",
+            "Gracias por hacerme tan feliz", "Mi parte favorita del día es hablar con vos", "Te elijo hoy y siempre", "Sos mi universo entero",
+            "Me vuelves loca", "Tu abrazo es mi casa", "Sos lo más lindo que tengo", "Contigo todo es mejor",
+            "Me haces reír como nadie", "Sos mi persona favorita", "Cada momento con vos es único", "Me enamoro de vos todos los días",
+            "Sos mi cable a tierra", "Me encanta cómo me mirás", "Sos mi mejor casualidad", "Qué lindo tenerte en mi vida",
+            "Hacés que todo sea más lindo", "Sos mi pensamiento favorito", "Amo todo de vos", "Sos mi felicidad entera",
+            "Mi hogar son tus brazos", "Sos mi sol en días nublados", "Adoro nuestras charlas", "Tu felicidad es la mía",
+            "Gracias por existir", "Sos todo lo que está bien", "Me hacés sentir única", "Amo caminar de tu mano",
+            "Sos mi paz en este caos", "Sos mi gran amor", "Cada día te amo más", "Sos mi compañero ideal",
+            "Me encantan tus abrazos fuertes", "Sos el dueño de mi corazón", "Hacés latir mi corazón fuerte", "Amo tu forma de ser",
+            "Sos mi mayor tesoro", "Sos mi destino favorito", "No te cambio por nada", "Me completás el alma",
+            "Sos mi sonrisa de cada día", "Tu amor me hace bien", "Sos magia pura", "Me encanta estar con vos",
+            "Sos mi persona ideal", "Hacés mi mundo más brillante", "Amo cada detalle tuyo", "Sos mi motivo favorito",
+            "Sos mi sueño hecho realidad", "Tu amor es mi motor", "Te amo por cómo sos", "Sos único en el mundo",
+            "Me hacés inmensamente feliz", "Sos mi refugio favorito", "Amo tu hermosa mirada", "Contigo el tiempo vuela",
+            "Sos mi presente y mi futuro", "Me hacés bien al corazón", "Sos mi rincón favorito", "Amo cuando nos reímos juntos",
+            "Sos mi debilidad más linda", "Me enamorás a cada segundo", "Sos todo lo que necesito", "Gracias por cuidarme tanto",
+            "Tu sonrisa me desarma", "Sos mi estrella más brillante", "Amo tu dulce voz", "Sos mi gran aventura",
+            "Sos mi cable a tierra", "Hacés que todo valga la pena", "Sos mi canción favorita", "Me encanta perderme en tus ojos",
+            "Sos el chico más lindo de todos", "Amo compartir la vida con vos", "Sos mi alegría diaria", "Me llenás el alma de luz",
+            "Sos mi persona en el mundo", "Tu amor me da fuerzas", "Amo cada locura con vos", "Sos mi calma total",
+            "Me haces flotar en el aire", "Sos mi mejor regalo", "Tu amor es mi tesoro más grande", "Sos mi inspiración diaria",
+            "Amo nuestras miradas cómplices", "Sos mi mundo entero, lindo", "Me hacés la chica más feliz", "Sos mi cómplice en todo",
+            "Tu cariño me llena el corazón", "Sos el centro de mi universo", "Amo envejecer a tu lado", "Sos mi gran debilidad",
+            "Me encanta cómo me cuidás", "Sos todo lo que soñé alguna vez", "Te amo con toda mi alma", "Sos y siempre serás vos"
+        ];
+
+        let particles = [];
+        const center = { x: 0, y: 0 };
+        const blackHoleRadius = 45;
+        let targetRotationX = 0, rotationX = 0, zoom = 1, targetZoom = 1;
+        let isDragging = false, previousMouseX = 0;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            center.x = canvas.width / 2;
+            center.y = canvas.height / 2;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(text = null) {
+                this.text = text;
+                this.reset();
+                this.angle = Math.random() * Math.PI * 2;
+                this.distance = blackHoleRadius + 40 +
+                    Math.random() * (Math.min(canvas.width, canvas.height) / 2.5);
+            }
+
+            reset() {
+                this.angle = Math.random() * Math.PI * 2;
+                this.distance = Math.min(canvas.width, canvas.height) / 3 +
+                    Math.random() * 250;
+                this.speed = 0.001 + Math.random() * 0.002;
+
+                const colors = [
+                    '#ffffff', '#e0f2fe', '#bae6fd',
+                    '#7dd3fc', '#38bdf8', '#0ea5e9'
+                ];
+
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.size = Math.random() * 1.5 + 1;
+                this.alpha = 0.3 + Math.random() * 0.7;
+            }
+
+            update() {
+                this.angle += this.speed;
+
+                if (this.distance > blackHoleRadius + 15) {
+                    this.distance -= 0.05;
+                } else {
+                    this.reset();
+                }
+            }
+
+            draw(currentRotation) {
+                const finalAngle = this.angle + currentRotation;
+                const finalDistance = this.distance * zoom;
+                const x = center.x + Math.cos(finalAngle) * finalDistance;
+                const y = center.y + Math.sin(finalAngle) * finalDistance;
+
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+
+                if (this.text) {
+                    ctx.fillStyle = '#e0f2fe';
+                    ctx.font = `${Math.max(8, Math.min(15, 10.5 * zoom))}px sans-serif`;
+                    ctx.shadowColor = '#0066cc';
+                    ctx.shadowBlur = 4;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.text, x, y);
+                } else {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, this.size * Math.max(0.5, zoom), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        function init() {
+            particles = [];
+
+            for (let i = 0; i < 500; i++) {
+                particles.push(new Particle());
+            }
+
+            frases.forEach(frase => {
+                particles.push(new Particle(frase));
+            });
+        }
+
+        function startDrag(x) {
+            isDragging = true;
+            previousMouseX = x;
+        }
+
+        function moveDrag(x) {
+            if (!isDragging) return;
+
+            const deltaX = x - previousMouseX;
+            targetRotationX += deltaX * 0.007;
+            previousMouseX = x;
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        canvas.addEventListener('mousedown', e => startDrag(e.clientX));
+        window.addEventListener('mousemove', e => moveDrag(e.clientX));
+        window.addEventListener('mouseup', endDrag);
+
+        canvas.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) {
+                startDrag(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', e => {
+            if (e.touches.length === 1) {
+                moveDrag(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', endDrag);
+
+        window.addEventListener('wheel', e => {
+            if (e.deltaY < 0) {
+                targetZoom = Math.min(2.5, targetZoom + 0.1);
+            } else {
+                targetZoom = Math.max(0.4, targetZoom - 0.1);
+            }
+        }, { passive: true });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 8, 19, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            rotationX += (targetRotationX - rotationX) * 0.05;
+            zoom += (targetZoom - zoom) * 0.05;
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw(rotationX);
+            });
+
+            // Centro oscuro del universo.
+            const gradient = ctx.createRadialGradient(
+                center.x, center.y, 5,
+                center.x, center.y, blackHoleRadius + 20
+            );
+
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(0.7, 'rgba(0, 8, 25, 0.95)');
+            gradient.addColorStop(1, 'rgba(0, 15, 40, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, blackHoleRadius + 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
